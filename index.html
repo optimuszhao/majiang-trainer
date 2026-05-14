@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>广东红中麻将实战练习</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">中</div>
+        <div>
+          <h1>广东红中麻将实战练习</h1>
+          <p id="statusText">等待开始</p>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <label class="field">
+          <span>底钱</span>
+          <select id="baseMoneySelect">
+            <option value="1">1元</option>
+            <option value="2" selected>2元</option>
+            <option value="5">5元</option>
+            <option value="10">10元</option>
+            <option value="custom">自定义</option>
+          </select>
+        </label>
+        <input id="customBaseMoney" class="money-input hidden" type="number" min="1" value="2" aria-label="自定义底钱" />
+        <label class="field"><span>上家</span><select id="leftAi"></select></label>
+        <label class="field"><span>对家</span><select id="acrossAi"></select></label>
+        <label class="field"><span>下家</span><select id="rightAi"></select></label>
+      </div>
+
+      <nav class="actions" aria-label="牌局操作">
+        <button id="startBtn" class="primary">开始一局</button>
+        <button id="restartBtn" class="ghost" disabled>重新开始</button>
+        <button id="hintBtn" class="ghost" disabled>提示</button>
+        <button id="rulesBtn" class="ghost">规则</button>
+        <button id="settlementBtn" class="ghost">结算记录</button>
+        <button id="endBtn" class="ghost danger" disabled>结束本局</button>
+      </nav>
+    </header>
+
+    <main class="page">
+      <section class="scorebar" aria-label="四家金额">
+        <div id="scoreSelf">我 0元</div>
+        <div id="scoreRight">下家 0元</div>
+        <div id="scoreAcross">对家 0元</div>
+        <div id="scoreLeft">上家 0元</div>
+      </section>
+
+      <section id="emptyState" class="empty-state">
+        <h2>进入真实麻将桌练习</h2>
+        <p>开局后显示四面牌墙、三家机器人、共同弃牌区和我的手牌。提示默认隐藏，需要时再打开。</p>
+        <button id="emptyStartBtn" class="primary">开始一局</button>
+      </section>
+
+      <section id="gameBoard" class="game-board hidden" aria-label="麻将桌">
+        <div id="wallTop" class="wall wall-top"></div>
+        <div id="wallRight" class="wall wall-right"></div>
+        <div id="wallBottom" class="wall wall-bottom"></div>
+        <div id="wallLeft" class="wall wall-left"></div>
+
+        <section class="seat seat-across" aria-label="对家">
+          <div class="seat-head"><strong>对家</strong><span id="acrossMeta">13张</span></div>
+          <div id="acrossMelds" class="melds melds-horizontal"></div>
+          <div id="acrossHand" class="bot-hand horizontal"></div>
+        </section>
+
+        <section class="seat seat-left" aria-label="上家">
+          <div class="seat-head"><strong>上家</strong><span id="leftMeta">13张</span></div>
+          <div id="leftMelds" class="melds melds-vertical"></div>
+          <div id="leftHand" class="bot-hand vertical"></div>
+        </section>
+
+        <section class="seat seat-right" aria-label="下家">
+          <div class="seat-head"><strong>下家</strong><span id="rightMeta">13张</span></div>
+          <div id="rightMelds" class="melds melds-vertical"></div>
+          <div id="rightHand" class="bot-hand vertical"></div>
+        </section>
+
+        <section class="center-table">
+          <div class="state-grid">
+            <div><span>当前局数</span><b id="roundText">1</b></div>
+            <div><span>当前巡数</span><b id="turnText">0</b></div>
+            <div><span>剩余牌墙</span><b id="wallText">136</b></div>
+            <div><span>底钱</span><b id="baseMoneyText">2元</b></div>
+            <div class="wide"><span>当前状态</span><b id="phaseText">等待开始</b></div>
+          </div>
+          <div class="discard-title">共同弃牌区</div>
+          <div id="discardPool" class="discard-pool"></div>
+          <div id="actionBar" class="action-bar hidden"></div>
+        </section>
+
+        <section class="seat seat-self" aria-label="我">
+          <div class="my-head">
+            <div>
+              <strong>我</strong>
+              <span id="selfMeta">请选择要打出的牌</span>
+            </div>
+            <div id="selfMelds" class="melds melds-horizontal"></div>
+          </div>
+          <div id="myHand" class="my-hand"></div>
+        </section>
+      </section>
+
+      <section id="hintPanel" class="hint-panel hidden" aria-label="提示"></section>
+    </main>
+
+    <dialog id="rulesDialog" class="modal rules-dialog">
+      <div class="dialog-head">
+        <h2>广东红中麻将规则</h2>
+        <button id="closeRulesBtn" class="icon-btn" aria-label="关闭规则">×</button>
+      </div>
+      <div class="rules-content">
+        <p><b>1. 牌组成：</b>共 136 张。万、条、筒 1~9 各 4 张；东南西北各 4 张；中发白各 4 张；无花牌。</p>
+        <p><b>2. 红中：</b>红中是万能牌，可以当任意牌。</p>
+        <p><b>3. 普通胡：</b>1 个对子 + 4 组三张牌，三张牌可以是顺子或刻子。</p>
+        <p><b>4. 七小对：</b>7 个对子可以胡，四张一样可以算两个对子。</p>
+        <p><b>5. 碰：</b>别人打出一张，我有两张一样，可以碰。</p>
+        <p><b>6. 杠：</b>别人打出一张，我有三张一样，可以明杠；自己摸到四张一样，可以暗杠；碰后摸到第四张，可以补杠。</p>
+        <p><b>7. 奖牌：</b>胡牌后从牌墙最后摸 6 张。1、5、9、东、红中是有效奖牌，每个有效奖牌按 1 个底钱计算。</p>
+      </div>
+    </dialog>
+
+    <dialog id="settlementDialog" class="modal settlement-dialog">
+      <div class="dialog-head">
+        <h2>结算</h2>
+        <button id="closeSettlementBtn" class="icon-btn" aria-label="关闭结算">×</button>
+      </div>
+      <div id="settlementContent" class="settlement-content"></div>
+    </dialog>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="./main.js"></script>
+  </body>
+</html>
