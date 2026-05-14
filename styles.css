@@ -416,6 +416,31 @@ h1 { font-size: 18px; line-height: 1.2; }
   background: #fff;
 }
 .prize-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.winner-hand-block { display: grid; gap: 10px; margin-top: 8px; }
+.winner-line {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+.winner-label {
+  display: inline-flex;
+  justify-content: center;
+  padding-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.winner-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.winner-tiles .meld {
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: #f8fafc;
+}
 
 .toast {
   position: fixed;

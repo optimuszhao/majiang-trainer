@@ -844,12 +844,14 @@ function handleHumanAction(action) {
 }
 
 function finishWin(playerId, winLabel) {
+  const winner = getPlayer(playerId);
   state.status = "ended";
   state.winner = {
     playerId,
     label: winLabel,
-    hand: [...getPlayer(playerId).hand],
-    type: getWinType(getPlayer(playerId)),
+    hand: [...winner.hand],
+    melds: cloneMelds(winner.melds),
+    type: getWinType(winner),
   };
   state.actionOptions = [];
   state.selectedUid = null;
@@ -863,6 +865,13 @@ function getWinType(player) {
   if (player.melds.length === 0 && isSevenPairsWithRedJoker(player.hand)) return "七小对";
   const hasRed = player.hand.some((tile) => tile.isRedJoker);
   return hasRed ? "普通胡（红中万能辅助）" : "普通胡";
+}
+
+function cloneMelds(melds) {
+  return melds.map((meld) => ({
+    ...meld,
+    tiles: [...meld.tiles],
+  }));
 }
 
 function endExhaustedWall() {
@@ -907,7 +916,10 @@ function calculateFinalSettlement() {
   state.settlement = {
     title: `${winner.name}${state.winner.label}`,
     winnerId: winner.id,
+    winnerName: winner.name,
     winType: state.winner.type,
+    winningHand: [...state.winner.hand],
+    winningMelds: cloneMelds(state.winner.melds || []),
     baseMoney: state.baseMoney,
     prizeTiles,
     effectivePrizeTiles,
@@ -1303,8 +1315,17 @@ function renderSettlementModal() {
     els.settlementDialog.showModal();
     return;
   }
+  const winningHand = [...(s.winningHand || [])];
+  sortHand(winningHand);
   els.settlementContent.innerHTML = `
     <div class="settle-card"><b>${s.title}</b><br>牌型：${s.winType || "流局"}；底钱：${s.baseMoney || state.baseMoney} 元</div>
+    <div class="settle-card">
+      <b>${s.winnerName || PLAYER_NAME[s.winnerId]}胡牌展示</b>
+      <div class="winner-hand-block">
+        ${s.winningMelds?.length ? `<div class="winner-line"><span class="winner-label">明牌</span><div class="winner-tiles">${s.winningMelds.map((meld) => renderMeldHtml(meld)).join("")}</div></div>` : ""}
+        <div class="winner-line"><span class="winner-label">手牌</span><div class="winner-tiles">${winningHand.map((tile) => tileImageHtml(tile)).join("") || "无"}</div></div>
+      </div>
+    </div>
     <div class="settle-card">
       <b>奖牌 6 张</b>
       <div class="prize-row">${s.prizeTiles.map((tile) => tileImageHtml(tile)).join("") || "无"}</div>
@@ -1314,6 +1335,15 @@ function renderSettlementModal() {
     <div class="money-grid">${state.players.map((p) => `<div>${p.name}<br><b>${p.money}元</b></div>`).join("")}</div>
   `;
   els.settlementDialog.showModal();
+}
+
+function renderMeldHtml(meld) {
+  return `
+    <span class="meld">
+      <span class="meld-label">${({ peng: "碰", mingGang: "明杠", anGang: "暗杠", buGang: "补杠" })[meld.type]}</span>
+      ${meld.tiles.map((tile, index) => meld.type === "anGang" && index < 2 ? '<img class="tile-img" src="assets/tiles/back.png" alt="暗杠" draggable="false">' : tileImageHtml(tile)).join("")}
+    </span>
+  `;
 }
 
 function tileImage(tile) {
